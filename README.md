@@ -178,7 +178,7 @@ roslaunch (whatever your robot_name is (lowercases))_description display.launch
 
 If you want to simulate your robot on gazebo, just run
 ```bash
-roslaunch (whatever your robot_name is)_description gazebo.launch
+roslaunch (whatever your robot_name is(lowercase))_description gazebo.launch
 ```
 Gazebo was not tested by me!
 
