@@ -125,122 +125,122 @@ def make_joints_dict(root, msg):
     'PinSlot', 'Planner', 'Ball']  # these are the names in urdf
 
     joints_dict = {}
-
+    
     for joint in root.joints:
-
-        joint_dict = {}
-        joint_type = joint_type_list[joint.jointMotion.jointType]
-        joint_dict['type'] = joint_type
-
-        # switch by the type of the joint
-        joint_dict['axis'] = [0, 0, 0]
-        joint_dict['upper_limit'] = 0.0
-        joint_dict['lower_limit'] = 0.0
-
-        # support  "Revolute", "Rigid" and "Slider"
-        if joint_type == 'revolute':
-            joint_dict['axis'] = [round(i, 6) for i in \
-                joint.jointMotion.rotationAxisVector.asArray()] ## In Fusion, exported axis is normalized.
-            max_enabled = joint.jointMotion.rotationLimits.isMaximumValueEnabled
-            min_enabled = joint.jointMotion.rotationLimits.isMinimumValueEnabled
-            if max_enabled and min_enabled:
-                joint_dict['upper_limit'] = round(joint.jointMotion.rotationLimits.maximumValue, 6)
-                joint_dict['lower_limit'] = round(joint.jointMotion.rotationLimits.minimumValue, 6)
-            elif max_enabled and not min_enabled:
-                msg = joint.name + 'is not set its lower limit. Please set it and try again.'
-                break
-            elif not max_enabled and min_enabled:
-                msg = joint.name + 'is not set its upper limit. Please set it and try again.'
-                break
-            else:  # if there is no angle limit
-                joint_dict['type'] = 'continuous'
-
-        elif joint_type == 'prismatic':
-            joint_dict['axis'] = [round(i, 6) for i in \
-                joint.jointMotion.slideDirectionVector.asArray()]  # Also normalized
-            max_enabled = joint.jointMotion.slideLimits.isMaximumValueEnabled
-            min_enabled = joint.jointMotion.slideLimits.isMinimumValueEnabled
-            if max_enabled and min_enabled:
-                joint_dict['upper_limit'] = round(joint.jointMotion.slideLimits.maximumValue/100, 6)
-                joint_dict['lower_limit'] = round(joint.jointMotion.slideLimits.minimumValue/100, 6)
-            elif max_enabled and not min_enabled:
-                msg = joint.name + 'is not set its lower limit. Please set it and try again.'
-                break
-            elif not max_enabled and min_enabled:
-                msg = joint.name + 'is not set its upper limit. Please set it and try again.'
-                break
-        elif joint_type == 'fixed':
-            pass
-        
-
-        def get_parent(occ): 
-        # function to find the root component of the joint. This is necessary for the correct component name in the urdf file
-            if occ.assemblyContext != None:
-                occ = get_parent(occ.assemblyContext)
-            return occ
-
-        if joint.occurrenceTwo != None and joint.occurrenceOne != None:
-            parent_occ = get_parent(joint.occurrenceTwo)
-            # print("Joint 1 Parent: " +parent_occ.name)
-            if "base_link" in parent_occ.name:
-                joint_dict['parent'] = 'base_link'
-                base_link = parent_occ
-            else:
-                joint_dict['parent'] = re.sub('[ :()]', '_', parent_occ.name)
-            # print("Joint 2: " +joint.occurrenceOne.name)
-            parent_occ = get_parent(joint.occurrenceOne)
-            # print("Joint 2 Parent: " +parent_occ.name)
-            joint_dict['child'] = re.sub('[ :()]', '_', parent_occ.name)
-        else:
-            break
-        
-        def getJointOriginWorldCoordinates(joint :adsk.fusion.Joint):
-        # Function to transform the joint origin coordinates which are in the component context into world coordinates
-        # Thanky you for the help in the fusion forum
-        # https://forums.autodesk.com/t5/fusion-360-api-and-scripts/how-to-get-the-joint-origin-in-world-context/m-p/10011971/highlight/false#M12401
-            def getMatrixFromRoot(root_occ) -> adsk.core.Matrix3D:
-                mat = adsk.core.Matrix3D.create()
-
-                occ = adsk.fusion.Occurrence.cast(root_occ)
-                if not occ:
-                    return mat # root
-
-                des = adsk.fusion.Design.cast(occ.component.parentDesign)
-                root = des.rootComponent
-
-                occ_names = occ.fullPathName.split('+')
-                occs = [root.allOccurrences.itemByName(name) for name in occ_names]
-                mat3ds = [occ.transform for occ in occs if occ!= None]
-                mat3ds.reverse()
-                for mat3d in mat3ds:
-                    mat.transformBy(mat3d)
-                return mat
-
-            mat :adsk.core.Matrix3D = getMatrixFromRoot(joint.occurrenceOne)
-            ori1 :adsk.core.Point3D = joint.geometryOrOriginOne.origin.copy()
-            ori1.transformBy(mat)
-
-            mat = getMatrixFromRoot(joint.occurrenceTwo)
-            ori2 :adsk.core.Point3D = joint.geometryOrOriginTwo.origin.copy()
-            ori2.transformBy(mat)
-            return ori1, ori2
-
-        try:
-            ori1, xyz_of_joint = getJointOriginWorldCoordinates(joint)
-            joint_dict['xyz'] = [round(i / 100.0, 6) for i in xyz_of_joint.asArray()]  # converted to meter
-            #print(f"xyz : {joint_dict['xyz']}")
-
-        except:
-            print('Failed:\n{}'.format(traceback.format_exc()))
-            try:
-                if type(joint.geometryOrOriginTwo)==adsk.fusion.JointOrigin:
-                    data = joint.geometryOrOriginTwo.geometry.origin.asArray()
+        if joint.isLightBulbOn :
+            joint_dict = {}
+            joint_type = joint_type_list[joint.jointMotion.jointType]
+            joint_dict['type'] = joint_type
+    
+            # switch by the type of the joint
+            joint_dict['axis'] = [0, 0, 0]
+            joint_dict['upper_limit'] = 0.0
+            joint_dict['lower_limit'] = 0.0
+    
+            # support  "Revolute", "Rigid" and "Slider"
+            if joint_type == 'revolute':
+                joint_dict['axis'] = [round(i, 6) for i in \
+                    joint.jointMotion.rotationAxisVector.asArray()] ## In Fusion, exported axis is normalized.
+                max_enabled = joint.jointMotion.rotationLimits.isMaximumValueEnabled
+                min_enabled = joint.jointMotion.rotationLimits.isMinimumValueEnabled
+                if max_enabled and min_enabled:
+                    joint_dict['upper_limit'] = round(joint.jointMotion.rotationLimits.maximumValue, 6)
+                    joint_dict['lower_limit'] = round(joint.jointMotion.rotationLimits.minimumValue, 6)
+                elif max_enabled and not min_enabled:
+                    msg = joint.name + 'is not set its lower limit. Please set it and try again.'
+                    break
+                elif not max_enabled and min_enabled:
+                    msg = joint.name + 'is not set its upper limit. Please set it and try again.'
+                    break
+                else:  # if there is no angle limit
+                    joint_dict['type'] = 'continuous'
+    
+            elif joint_type == 'prismatic':
+                joint_dict['axis'] = [round(i, 6) for i in \
+                    joint.jointMotion.slideDirectionVector.asArray()]  # Also normalized
+                max_enabled = joint.jointMotion.slideLimits.isMaximumValueEnabled
+                min_enabled = joint.jointMotion.slideLimits.isMinimumValueEnabled
+                if max_enabled and min_enabled:
+                    joint_dict['upper_limit'] = round(joint.jointMotion.slideLimits.maximumValue/100, 6)
+                    joint_dict['lower_limit'] = round(joint.jointMotion.slideLimits.minimumValue/100, 6)
+                elif max_enabled and not min_enabled:
+                    msg = joint.name + 'is not set its lower limit. Please set it and try again.'
+                    break
+                elif not max_enabled and min_enabled:
+                    msg = joint.name + 'is not set its upper limit. Please set it and try again.'
+                    break
+            elif joint_type == 'fixed':
+                pass
+            
+    
+            def get_parent(occ): 
+            # function to find the root component of the joint. This is necessary for the correct component name in the urdf file
+                if occ.assemblyContext != None:
+                    occ = get_parent(occ.assemblyContext)
+                return occ
+    
+            if joint.occurrenceTwo != None and joint.occurrenceOne != None and joint.occurrenceOne.isLightBulbOn:
+                parent_occ = get_parent(joint.occurrenceTwo)
+                # print("Joint 1 Parent: " +parent_occ.name)
+                if "base_link" in parent_occ.name:
+                    joint_dict['parent'] = 'base_link'
+                    base_link = parent_occ
                 else:
-                    data = joint.geometryOrOriginTwo.origin.asArray()
-                joint_dict['xyz'] = [round(i / 100.0, 6) for i in data]  # converted to meter
-            except:
-                msg = joint.name + " doesn't have joint origin. Please set it and run again."
+                    joint_dict['parent'] = re.sub('[ :()]', '_', parent_occ.name)
+                # print("Joint 2: " +joint.occurrenceOne.name)
+                parent_occ = get_parent(joint.occurrenceOne)
+                # print("Joint 2 Parent: " +parent_occ.name)
+                joint_dict['child'] = re.sub('[ :()]', '_', parent_occ.name)
+            else:
                 break
-
-        joints_dict[joint.name] = joint_dict
+            
+            def getJointOriginWorldCoordinates(joint :adsk.fusion.Joint):
+            # Function to transform the joint origin coordinates which are in the component context into world coordinates
+            # Thanky you for the help in the fusion forum
+            # https://forums.autodesk.com/t5/fusion-360-api-and-scripts/how-to-get-the-joint-origin-in-world-context/m-p/10011971/highlight/false#M12401
+                def getMatrixFromRoot(root_occ) -> adsk.core.Matrix3D:
+                    mat = adsk.core.Matrix3D.create()
+    
+                    occ = adsk.fusion.Occurrence.cast(root_occ)
+                    if not occ:
+                        return mat # root
+    
+                    des = adsk.fusion.Design.cast(occ.component.parentDesign)
+                    root = des.rootComponent
+    
+                    occ_names = occ.fullPathName.split('+')
+                    occs = [root.allOccurrences.itemByName(name) for name in occ_names]
+                    mat3ds = [occ.transform for occ in occs if occ!= None]
+                    mat3ds.reverse()
+                    for mat3d in mat3ds:
+                        mat.transformBy(mat3d)
+                    return mat
+    
+                mat :adsk.core.Matrix3D = getMatrixFromRoot(joint.occurrenceOne)
+                ori1 :adsk.core.Point3D = joint.geometryOrOriginOne.origin.copy()
+                ori1.transformBy(mat)
+    
+                mat = getMatrixFromRoot(joint.occurrenceTwo)
+                ori2 :adsk.core.Point3D = joint.geometryOrOriginTwo.origin.copy()
+                ori2.transformBy(mat)
+                return ori1, ori2
+    
+            try:
+                ori1, xyz_of_joint = getJointOriginWorldCoordinates(joint)
+                joint_dict['xyz'] = [round(i / 100.0, 6) for i in xyz_of_joint.asArray()]  # converted to meter
+                #print(f"xyz : {joint_dict['xyz']}")
+    
+            except:
+                print('Failed:\n{}'.format(traceback.format_exc()))
+                try:
+                    if type(joint.geometryOrOriginTwo)==adsk.fusion.JointOrigin:
+                        data = joint.geometryOrOriginTwo.geometry.origin.asArray()
+                    else:
+                        data = joint.geometryOrOriginTwo.origin.asArray()
+                    joint_dict['xyz'] = [round(i / 100.0, 6) for i in data]  # converted to meter
+                except:
+                    msg = joint.name + " doesn't have joint origin. Please set it and run again."
+                    break
+    
+            joints_dict[joint.name] = joint_dict
     return joints_dict, msg
