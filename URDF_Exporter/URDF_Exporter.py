@@ -1,4 +1,6 @@
 #Author-syuntoku14
+#Author-spacemaster85
+#Modified on Sun Jan 17 2021
 #Description-Generate URDF file from Fusion 360
 
 import adsk, adsk.core, adsk.fusion, traceback
@@ -22,7 +24,7 @@ def run(context):
     ui = None
     success_msg = 'Successfully create URDF file'
     msg = success_msg
-    
+
     try:
         # --------------------
         # initialize
@@ -39,7 +41,7 @@ def run(context):
         components = design.allComponents
 
         # set the names        
-        robot_name = root.name.split()[0]
+        robot_name = root.name.split()[0].lower()
         package_name = robot_name + '_description'
         save_dir = utils.file_dialog(ui)
         if save_dir == False:
@@ -60,7 +62,7 @@ def run(context):
         if msg != success_msg:
             ui.messageBox(msg, title)
             return 0   
-        
+        print(joints_dict)
         # Generate inertial_dict
         inertial_dict, msg = Link.make_inertial_dict(root, msg)
         if msg != success_msg:
@@ -71,13 +73,17 @@ def run(context):
             ui.messageBox(msg, title)
             return 0
         
-        links_xyz_dict = {}
+        material_dict, color_dict, msg = Link.make_material_dict(root, msg)
+        if msg != success_msg:
+            ui.messageBox(msg, title)
+            return 0  
         
+        links_xyz_dict = {} 
         # --------------------
         # Generate URDF
-        Write.write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir)
-        Write.write_materials_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir)
-        Write.write_transmissions_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir)
+        Write.write_urdf(joints_dict, links_xyz_dict, inertial_dict, material_dict, package_name, robot_name, save_dir)
+        Write.write_materials_xacro(color_dict, robot_name, save_dir)
+        Write.write_transmissions_xacro(joints_dict, links_xyz_dict, robot_name, save_dir)
         Write.write_gazebo_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir)
         Write.write_display_launch(package_name, robot_name, save_dir)
         Write.write_gazebo_launch(package_name, robot_name, save_dir)
@@ -90,9 +96,8 @@ def run(context):
         utils.update_package_xml(save_dir, package_name)
 
         # Generate STl files        
-        utils.copy_occs(root)
-        utils.export_stl(design, save_dir, components)   
-        
+        utils.export_stl(app, save_dir)   
+
         ui.messageBox(msg, title)
         
     except:

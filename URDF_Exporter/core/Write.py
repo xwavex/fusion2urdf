@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun May 12 20:46:26 2019
+Modified on Sun Jan 17 2021
 
 @author: syuntoku
+@author: spacemaster85
 """
 
-import adsk, os
+import adsk, os, re
 from xml.etree.ElementTree import Element, SubElement
 from . import Link, Joint
 from ..utils import utils
 
-def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict):
+def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict, material_dict):
     """
     Write links information into urdf "repo/file_name"
     
@@ -27,19 +29,24 @@ def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict)
         urdf full path
     inertial_dict:
         information of the each inertial
-    
+    material_dict:
+        information of the each inertial    
     Note
     ----------
     In this function, links_xyz_dict is set for write_joint_tran_urdf.
     The origin of the coordinate of center_of_mass is the coordinate of the link
     """
+    
+    
+    
     with open(file_name, mode='a') as f:
         # for base_link
         center_of_mass = inertial_dict['base_link']['center_of_mass']
         link = Link.Link(name='base_link', xyz=[0,0,0], 
             center_of_mass=center_of_mass, repo=repo,
             mass=inertial_dict['base_link']['mass'],
-            inertia_tensor=inertial_dict['base_link']['inertia'])
+            inertia_tensor=inertial_dict['base_link']['inertia'],
+            material = material_dict['base_link']['material'])
         links_xyz_dict[link.name] = link.xyz
         link.make_link_xml()
         f.write(link.link_xml)
@@ -47,17 +54,32 @@ def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict)
 
         # others
         for joint in joints_dict:
-            name = joints_dict[joint]['child']
-            center_of_mass = \
-                [ i-j for i, j in zip(inertial_dict[name]['center_of_mass'], joints_dict[joint]['xyz'])]
-            link = Link.Link(name=name, xyz=joints_dict[joint]['xyz'],\
-                center_of_mass=center_of_mass,\
-                repo=repo, mass=inertial_dict[name]['mass'],\
-                inertia_tensor=inertial_dict[name]['inertia'])
-            links_xyz_dict[link.name] = link.xyz            
-            link.make_link_xml()
-            f.write(link.link_xml)
-            f.write('\n')
+            num_child = 0
+            for joint_search in joints_dict:
+                if joints_dict[joint]['child'] == joints_dict[joint_search]['child']:
+                    num_child += 1
+
+            if num_child > 1:
+                app = adsk.core.Application.get()
+                ui = app.userInterface
+                ui.messageBox("Component %s with more than one child connection.\
+                     \nThis mostly happens when you connect several subcomponents to different parents.\
+                      \nBe aware to threat nested componets as a singel component!"
+                % (joints_dict[joint]['child']), "Error!")
+                quit()
+            else: 
+                name = re.sub('[ :()]', '_', joints_dict[joint]['child'])
+                center_of_mass = \
+                    [ i-j for i, j in zip(inertial_dict[name]['center_of_mass'], joints_dict[joint]['xyz'])]
+                link = Link.Link(name=name, xyz=joints_dict[joint]['xyz'],\
+                    center_of_mass=center_of_mass,\
+                    repo=repo, mass=inertial_dict[name]['mass'],\
+                    inertia_tensor=inertial_dict[name]['inertia'],
+                    material = material_dict[name]['material'])
+                links_xyz_dict[link.name] = link.xyz            
+                link.make_link_xml()
+                f.write(link.link_xml)
+                f.write('\n')
 
 
 def write_joint_urdf(joints_dict, repo, links_xyz_dict, file_name):
@@ -118,11 +140,11 @@ def write_gazebo_endtag(file_name):
         f.write('</robot>\n')
         
 
-def write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir):
+def write_urdf(joints_dict, links_xyz_dict, inertial_dict, material_dict, package_name, robot_name, save_dir):
     try: os.mkdir(save_dir + '/urdf')
     except: pass 
 
-    file_name = save_dir + '/urdf/' + robot_name + '.xacro'  # the name of urdf file
+    file_name = save_dir + '/urdf/' + robot_name.lower() + '.xacro'  # the name of urdf file
     repo = package_name + '/meshes/'  # the repository of binary stl files
     with open(file_name, mode='w') as f:
         f.write('<?xml version="1.0" ?>\n')
@@ -135,11 +157,11 @@ def write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_n
         f.write('<xacro:include filename="$(find {})/urdf/{}.gazebo" />'.format(package_name, robot_name))
         f.write('\n')
 
-    write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict)
+    write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict, material_dict)
     write_joint_urdf(joints_dict, repo, links_xyz_dict, file_name)
     write_gazebo_endtag(file_name)
 
-def write_materials_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir):
+def write_materials_xacro(color_dict, robot_name, save_dir):
     try: os.mkdir(save_dir + '/urdf')
     except: pass  
 
@@ -148,13 +170,14 @@ def write_materials_xacro(joints_dict, links_xyz_dict, inertial_dict, package_na
         f.write('<?xml version="1.0" ?>\n')
         f.write('<robot name="{}" xmlns:xacro="http://www.ros.org/wiki/xacro" >\n'.format(robot_name))
         f.write('\n')
-        f.write('<material name="silver">\n')
-        f.write('  <color rgba="0.700 0.700 0.700 1.000"/>\n')
-        f.write('</material>\n')
+        for color in color_dict:
+            f.write(f'<material name="{color}">\n')
+            f.write(f'  <color rgba="{color_dict[color]}"/>\n')
+            f.write('</material>\n')
         f.write('\n')
         f.write('</robot>\n')
 
-def write_transmissions_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir):
+def write_transmissions_xacro(joints_dict, links_xyz_dict, robot_name, save_dir):
     """
     Write joints and transmission information into urdf "repo/file_name"
     
@@ -186,6 +209,7 @@ def write_transmissions_xacro(joints_dict, links_xyz_dict, inertial_dict, packag
             try:
                 xyz = [round(p-c, 6) for p, c in \
                     zip(links_xyz_dict[parent], links_xyz_dict[child])]  # xyz = parent - child
+                print(f"xyz: {xyz}")    
             except KeyError as ke:
                 app = adsk.core.Application.get()
                 ui = app.userInterface
