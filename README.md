@@ -1,10 +1,17 @@
 # fusion2urdf
 
-I have stopped developing this repo, but any contributions are welcome.
+I forked this repo from [syuntoku14] who did a super work. During the usage of the original package some restriction hit me quite hard.  I decided to add some new features to the package like handling nested components and colors.
+
+Hope you enjoy the new features!
+
 This repo only supports Gazebo, if you are using pybullet, see: https://github.com/yanshil/Fusion2PyBullet.
 
-
 ## Updated!!!
+* 2021/01/23: Version 1.0
+  * This version can handle now nested components
+  * Hopefully final bugfix of the joint coordinates calculation
+  * Reading out the color of the component and set it in the material file
+
 * 2021/01/09: Fix xyz calculation. 
   * If you see that your components move arround the map center in rviz try this update 
   * More Infos see: https://forums.autodesk.com/t5/fusion-360-api-and-scripts/difference-of-geometryororiginone-and-geometryororiginonetwo/m-p/9837767
@@ -79,18 +86,20 @@ In addition to that, you should be careful when define your joints. The **parent
 
 <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/spot_mini.PNG" alt="spot_mini" title="spot_mini" width="300" height="300">
 
-Also, make sure components of your model has only bodies. **Nested components are not supported**.
+~~Also, make sure components of your model has only bodies. **Nested components are not supported**.~~
 For example, this works:
-
 <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/only_bodies.PNG" alt="only_bodies" title="only_bodies" width="300" height="300">
 
-but this doesn't work since the "face (3):1" component contains other components. A component must contain only bodies:
+~~but this doesn't work since the "face (3):1" component contains other components. A component must contain only bodies:~~
+With the new version this should also work: 
 
 <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/nest_components.PNG" alt="nest_components" title="nest_components" width="300" height="300">
+
 
 Sometimes this script exports abnormal urdf without any error messages. In that case, the joints should have problems. Redefine the joints and run again.
 
 In addition to that, make sure that this script currently supports only "Rigid", "Slider" and "Revolute".
+
 
 
 ## How to use
