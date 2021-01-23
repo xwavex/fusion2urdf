@@ -15,6 +15,7 @@ This repo only supports Gazebo, if you are using pybullet, see: https://github.c
   * Reading out the color of the component and set it in the material file
   * All changes are done in a temporary file, so no backup of your design file is necessary (but it is still a good idea)
    This means that also linked components can be used
+  * Added two example Fusion 360 files, which can be found in the _Example_ folder
 
 * 2021/01/09: Fix xyz calculation. 
   * If you see that your components move arround the map center in rviz try this update 
