@@ -176,6 +176,7 @@ def make_joints_dict(root, msg):
             def get_parent(occ): 
             # function to find the root component of the joint. This is necessary for the correct component name in the urdf file
                 if occ.assemblyContext != None:
+                    #print(occ.name)
                     occ = get_parent(occ.assemblyContext)
                 return occ
     
@@ -204,29 +205,37 @@ def make_joints_dict(root, msg):
                     occ = adsk.fusion.Occurrence.cast(root_occ)
                     if not occ:
                         return mat # root
-    
-                    des = adsk.fusion.Design.cast(occ.component.parentDesign)
-                    root = des.rootComponent
-    
-                    occ_names = occ.fullPathName.split('+')
-                    occs = [root.allOccurrences.itemByName(name) for name in occ_names]
+
+                    def getParentOccs(joint):
+                        occs_list = []
+            
+                        if joint != None:    
+                            occs_list.append(joint)
+             
+                        if joint.assemblyContext != None:
+                            occs_list = occs_list + getParentOccs(joint.assemblyContext)
+            
+                        return occs_list
+                    
+                    occs = getParentOccs(root_occ)
                     mat3ds = [occ.transform for occ in occs if occ!= None]
-                    mat3ds.reverse()
+                    #mat3ds.reverse()
                     for mat3d in mat3ds:
                         mat.transformBy(mat3d)
                     return mat
     
-                mat :adsk.core.Matrix3D = getMatrixFromRoot(joint.occurrenceOne)
-                ori1 :adsk.core.Point3D = joint.geometryOrOriginOne.origin.copy()
-                ori1.transformBy(mat)
+                # mat :adsk.core.Matrix3D = getMatrixFromRoot(joint.occurrenceOne)
+                # ori1 :adsk.core.Point3D = joint.geometryOrOriginOne.origin.copy()
+                # ori1.transformBy(mat)
     
                 mat = getMatrixFromRoot(joint.occurrenceTwo)
                 ori2 :adsk.core.Point3D = joint.geometryOrOriginTwo.origin.copy()
                 ori2.transformBy(mat)
-                return ori1, ori2
+                return  ori2 #ori1,
     
             try:
-                ori1, xyz_of_joint = getJointOriginWorldCoordinates(joint)
+                xyz_of_joint = getJointOriginWorldCoordinates(joint)
+                #xyz_of_joint = joint.geometryOrOriginTwo.origin
                 joint_dict['xyz'] = [round(i / 100.0, 6) for i in xyz_of_joint.asArray()]  # converted to meter
                 #print(f"xyz : {joint_dict['xyz']}")
     

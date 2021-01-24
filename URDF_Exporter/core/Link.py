@@ -7,7 +7,7 @@ Modified on Sun Jan 17 2021
 @author: spacemaster85
 """
 
-import adsk, re
+import adsk, re, traceback
 from xml.etree.ElementTree import Element, SubElement
 from ..utils import utils
 
@@ -164,25 +164,46 @@ def make_material_dict(root, msg):
     color_dict = {}
     color_dict['silver_default'] = "0.700 0.700 0.700 1.000"
     for occs in allOccs:
-        # Skip the root component.
         app_dict = {}
         app_dict['material'] = "silver_default"
   
         occs_dict = {}
+  
+        # def traverseColor(occ):
+        #     appear = None
+        #     if occ.appearance:
+        #         print("occ appearance")
+        #         print(occ.appearance)
+        #         for prop in occ.appearance.appearanceProperties:
+        #             print(prop)
+        #             if type(prop) == adsk.core.ColorProperty:
+        #                 print(prop)  
+        #                 return prop
+        #     if occ.childOccurrences:
+        #         for child in occ.childOccurrences:
+        #             print(child.name)
+        #             appear = traverseColor(child)
+        #     return appear
+    
+        # try:
+        #     prop = traverseColor(occs)
+        #     print(prop)
+        # except:
+        #         print('Failed:\n{}'.format(traceback.format_exc()))
+
+
 
         if occs.appearance:
             for prop in occs.appearance.appearanceProperties:
                 
                 if type(prop) == adsk.core.ColorProperty:
-
+        #if prop:
                     color_name = convert_german(occs.appearance.name).replace("Farbe - ","").replace("Color - ","")
-
                     color_name = ("".join(re.findall(r"[A-Za-z0-9 ]*", color_name)))
                     color_name = re.sub('\s+',' ',color_name)
                     color_name.strip()
                     color_name = re.sub('[ :()]', '_', color_name)
                     color_name = color_name.replace("__","_").lower()
-
                     # print("Color found: "+ color_name)
                     # print("Red: %d ", prop.value.red)
                     # print("Green: %d", prop.value.green)
@@ -191,8 +212,8 @@ def make_material_dict(root, msg):
                     
                     app_dict['material'] = color_name
                     color_dict[color_name] = f"{prop.value.red/255} {prop.value.green/255} {prop.value.blue/255} {prop.value.opacity/255}"
-
                     break
+
         if "base_link" in occs.component.name:
             material_dict['base_link'] = app_dict
         else:
