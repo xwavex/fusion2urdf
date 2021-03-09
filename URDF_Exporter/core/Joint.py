@@ -234,8 +234,8 @@ def make_joints_dict(root, msg):
                 return  ori2 #ori1,
     
             try:
-                xyz_of_joint = getJointOriginWorldCoordinates(joint)
-                #xyz_of_joint = joint.geometryOrOriginTwo.origin
+                #xyz_of_joint = getJointOriginWorldCoordinates(joint)
+                xyz_of_joint = joint.geometryOrOriginTwo.origin
                 joint_dict['xyz'] = [round(i / 100.0, 6) for i in xyz_of_joint.asArray()]  # converted to meter
                 #print(f"xyz : {joint_dict['xyz']}")
     

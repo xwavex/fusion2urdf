@@ -169,27 +169,27 @@ def make_material_dict(root, msg):
   
         occs_dict = {}
   
-        # def traverseColor(occ):
-        #     appear = None
-        #     if occ.appearance:
-        #         print("occ appearance")
-        #         print(occ.appearance)
-        #         for prop in occ.appearance.appearanceProperties:
-        #             print(prop)
-        #             if type(prop) == adsk.core.ColorProperty:
-        #                 print(prop)  
-        #                 return prop
-        #     if occ.childOccurrences:
-        #         for child in occ.childOccurrences:
-        #             print(child.name)
-        #             appear = traverseColor(child)
-        #     return appear
+        def traverseColor(occ):
+            appear = None
+            if occ.component.appearance:
+                print("occ appearance")
+                print(occ.appearance)
+                for prop in occ.appearance.appearanceProperties:
+                    print(prop)
+                    if type(prop) == adsk.core.ColorProperty:
+                        print(prop)  
+                        return prop
+            if occ.childOccurrences:
+                for child in occ.childOccurrences:
+                    print(child.name)
+                    appear = traverseColor(child)
+            return appear
     
-        # try:
-        #     prop = traverseColor(occs)
-        #     print(prop)
-        # except:
-        #         print('Failed:\n{}'.format(traceback.format_exc()))
+        try:
+            prop = traverseColor(occs)
+            print(prop)
+        except:
+                print('Failed:\n{}'.format(traceback.format_exc()))
 
 
 
