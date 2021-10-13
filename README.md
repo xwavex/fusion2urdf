@@ -7,10 +7,18 @@ Hope you enjoy the new features!
 This repo only supports Gazebo, if you are using pybullet, see: https://github.com/yanshil/Fusion2PyBullet.
 
 ## Updated!!!
+* 2021/10/13: Version 1.2
+  * Made the color and material detection more robust
+  * Added ROS 2 launchfile generator
+  * Dialog Popup to choose between ROS 1 and ROS 2
+
+* 2021/03/09: version 1.1
+  * Fix FusionAPI Change
+
 * 2021/01/23: Version 1.0
   * This version can handle now nested components
   * The bodies and components which should be exported can be choosen via the light bulbs in Fusion 360
-  * Joints with disbaled light bulb will be ignored and not exported to the urdf file
+  * Joints with disabled light bulb will be ignored and not exported to the urdf file
   * Hopefully final bugfix of the joint coordinates calculation
   * Reading out the color of the component and set it in the material file
   * All changes are done in a temporary file, so no backup of your design file is necessary (but it is still a good idea)
@@ -184,10 +192,4 @@ roslaunch (whatever your robot_name is(lowercase))_description gazebo.launch
 Gazebo was not tested by me!
 
 **Enjoy your Fusion 360 and ROS life!**
-
-## Todo
-* Adding ROS2 launch file
-* ~~adding some Fusion example files~~
-
-
 

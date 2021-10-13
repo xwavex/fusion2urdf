@@ -186,6 +186,14 @@ def update_cmakelists(save_dir, package_name):
         else:
             sys.stdout.write(line)
 
+def update_ros2_launchfile(save_dir, package_name):
+    file_name = save_dir + '/launch/robot_description.launch.py'
+
+    for line in fileinput.input(file_name, inplace=True):
+        if 'fusion2urdf' in line:
+            sys.stdout.write(line.replace('fusion2urdf', package_name))
+        else:
+            sys.stdout.write(line)
 
 def update_package_xml(save_dir, package_name):
     file_name = save_dir + '/package.xml'

@@ -140,7 +140,7 @@ def write_gazebo_endtag(file_name):
         f.write('</robot>\n')
         
 
-def write_urdf(joints_dict, links_xyz_dict, inertial_dict, material_dict, package_name, robot_name, save_dir):
+def write_urdf(joints_dict, links_xyz_dict, inertial_dict, material_dict, package_name, robot_name, save_dir, gazebo):
     try: os.mkdir(save_dir + '/urdf')
     except: pass 
 
@@ -148,14 +148,16 @@ def write_urdf(joints_dict, links_xyz_dict, inertial_dict, material_dict, packag
     repo = package_name + '/meshes/'  # the repository of binary stl files
     with open(file_name, mode='w') as f:
         f.write('<?xml version="1.0" ?>\n')
+
         f.write('<robot name="{}" xmlns:xacro="http://www.ros.org/wiki/xacro">\n'.format(robot_name))
         f.write('\n')
         f.write('<xacro:include filename="$(find {})/urdf/materials.xacro" />'.format(package_name))
         f.write('\n')
         f.write('<xacro:include filename="$(find {})/urdf/{}.trans" />'.format(package_name, robot_name))
         f.write('\n')
-        f.write('<xacro:include filename="$(find {})/urdf/{}.gazebo" />'.format(package_name, robot_name))
-        f.write('\n')
+        if gazebo:
+            f.write('<xacro:include filename="$(find {})/urdf/{}.gazebo" />'.format(package_name, robot_name))
+            f.write('\n')
 
     write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict, material_dict)
     write_joint_urdf(joints_dict, repo, links_xyz_dict, file_name)
@@ -461,4 +463,5 @@ def write_yaml(package_name, robot_name, save_dir, joints_dict):
                 f.write('    type: effort_controllers/JointPositionController\n')
                 f.write('    joint: '+ joint + '\n')
                 f.write('    pid: {p: 100.0, i: 0.01, d: 10.0}\n')
+
 
